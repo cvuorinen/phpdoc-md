@@ -116,7 +116,7 @@ class Generator
             )
         ) . $content;
 
-        file_put_contents($this->outputDir . '/ApiIndex.md', $content);
+        file_put_contents($this->outputDir . '/README.md', $content);
     }
 
     /**
