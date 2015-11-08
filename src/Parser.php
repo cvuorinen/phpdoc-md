@@ -128,8 +128,10 @@ class Parser
             $return = $method->xpath('docblock/tag[@name="return"]');
 
             if (count($return)) {
+                $returnDescription = (string) $return[0]['description'];
                 $return = (string) $return[0]['type'];
             } else {
+                $returnDescription = '';
                 $return = 'mixed';
             }
 
@@ -180,6 +182,7 @@ class Parser
                 'deprecated'  => count($class->xpath('docblock/tag[@name="deprecated"]')) > 0,
                 'signature'   => $signature,
                 'return'      => $return,
+                'returnDescription' => $returnDescription,
                 'arguments'   => $arguments,
                 'definedBy'   => $className,
             );
