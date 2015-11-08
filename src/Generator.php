@@ -89,6 +89,11 @@ class Generator
         $twig->addFilter('stripPTags', new Twig_Filter_Function('PHPDocMd\\Generator::stripOuterParagraphTags'));
 
         foreach ($this->classDefinitions as $classInfo) {
+            // skip all abstract classes and interfaces
+            if ($classInfo['abstract'] || $classInfo['isInterface']) {
+                continue;
+            }
+
             $output = $twig->render(
                 file_get_contents($this->templateDir . '/class.twig'),
                 $classInfo
@@ -128,6 +133,11 @@ class Generator
         $links = array();
 
         foreach ($this->classDefinitions as $classInfo) {
+            // skip all abstract classes and interfaces
+            if ($classInfo['abstract'] || $classInfo['isInterface']) {
+                continue;
+            }
+
             $output .= $this->createLink(
                 $classInfo['className'],
                 $classInfo['shortClass'],
@@ -135,6 +145,11 @@ class Generator
             );
 
             foreach ($classInfo['methods'] as $method) {
+                // skip all but public methods
+                if ($method['visibility'] !== 'public') {
+                    continue;
+                }
+
                 $output .= $this->createLink(
                     $classInfo['className'],
                     $method['name'],
