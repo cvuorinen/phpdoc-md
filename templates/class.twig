@@ -52,7 +52,7 @@
 | Parameter | Type | Description |
 |-----------|------|-------------|
 {% for argument in method.arguments %}
-| {{ argument.name }} | **{% if argument.type %}{{ argument.type|classLink }}{% else %}mixed{% endif %}** | {{ argument.description|stripPTags|raw }} |
+| {{ argument.name }} | **{% if argument.type %}{{ argument.type|replace({'|': '&#124;'})|raw }}{% endif %}** | {{ argument.description|stripPTags|replace({'|': '&#124;'})|raw }} |
 {% endfor %}
 
 {% endif %}
