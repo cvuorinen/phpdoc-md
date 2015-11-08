@@ -82,6 +82,7 @@ class Generator
         $GLOBALS['PHPDocMD_linkTemplate'] = $this->linkTemplate;
 
         $twig->addFilter('classLink', new Twig_Filter_Function('PHPDocMd\Generator::classLink'));
+        $twig->addFilter('stripPTags', new Twig_Filter_Function('PHPDocMd\\Generator::stripOuterParagraphTags'));
 
         foreach ($this->classDefinitions as $className => $data) {
             $output = $twig->render(
@@ -169,7 +170,7 @@ class Generator
      *
      * @return string
      */
-    static function classLink($className, $label = null)
+    public static function classLink($className, $label = null)
     {
         $classDefinitions = $GLOBALS['PHPDocMD_classDefinitions'];
         $linkTemplate = $GLOBALS['PHPDocMD_linkTemplate'];
@@ -194,5 +195,18 @@ class Generator
         }
 
         return implode('|', $returnedClasses);
+    }
+
+    /**
+     * This is a twig template function.
+     *
+     * This function just strips the outer <p> tags from an argument's description.
+     * (Inner ```<p></p>``` tags are fine.)
+     * @param  string $text
+     * @return string
+     */
+    public static function stripOuterParagraphTags($text)
+    {
+        return preg_replace('/(^<p>|<\/p>$)/', null, $text);
     }
 }
