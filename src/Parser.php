@@ -168,17 +168,7 @@ class Parser
                 $arguments[] = $nArgument;
             }
 
-            $argumentStr = implode(', ', array_map(function ($argument) {
-                $return = $argument['name'];
-
-                if ($argument['type']) {
-                    $return = $argument['type'] . ' ' . $return;
-                }
-
-                return $return;
-            }, $arguments));
-
-            $signature = sprintf('%s::%s(%s): %s', (string) $class->name, $methodName, $argumentStr, $return);
+            $signature = $this->createMethodSignature((string) $class->name, $methodName, $arguments, $return);
 
             $methods[$methodName] = array(
                 'name'        => $methodName,
@@ -189,6 +179,7 @@ class Parser
                 'static'      => ((string) $method['static']) == "true",
                 'deprecated'  => count($class->xpath('docblock/tag[@name="deprecated"]')) > 0,
                 'signature'   => $signature,
+                'return'      => $return,
                 'arguments'   => $arguments,
                 'definedBy'   => $className,
             );
@@ -305,6 +296,17 @@ class Parser
 
             foreach ($this->classDefinitions[$extends]['methods'] as $methodName => $methodInfo) {
                 if (!isset($class[$methodName])) {
+                    if ($methodInfo['return'] === $this->classDefinitions[$extends]['shortClass']) {
+                        $methodInfo['return'] = $class['shortClass'];
+                    }
+
+                    $methodInfo['signature'] = $this->createMethodSignature(
+                        $class['shortClass'],
+                        $methodName,
+                        $methodInfo['arguments'],
+                        $methodInfo['return']
+                    );
+
                     $newMethods[$methodName] = $methodInfo;
                 }
             }
@@ -355,5 +357,28 @@ class Parser
         $this->classDefinitions[$className]['properties'] += $newProperties;
 
         return $newProperties;
+    }
+
+    /**
+     * @param string $className
+     * @param string $methodName
+     * @param array  $arguments
+     * @param string $return
+     *
+     * @return string
+     */
+    private function createMethodSignature($className, $methodName, array $arguments, $return)
+    {
+        $argumentStr = implode(', ', array_map(function ($argument) {
+            $return = $argument['name'];
+
+            if ($argument['type']) {
+                $return = $argument['type'] . ' ' . $return;
+            }
+
+            return $return;
+        }, $arguments));
+
+        return sprintf('%s::%s( %s ): %s', $className, $methodName, $argumentStr, $return);
     }
 }
