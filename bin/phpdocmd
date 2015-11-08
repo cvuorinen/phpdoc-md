@@ -32,6 +32,7 @@ $positional = array();
 
 $named = array(
     'lt' => '%c.md',
+    'title' => 'API Index',
 );
 
 for ($i = 0; $i < count($arguments); $i++) {
@@ -69,7 +70,8 @@ $generator = new PHPDocMD\Generator(
     $classDefinitions,
     $outputDir,
     $templateDir,
-    $named['lt']
+    $named['lt'],
+    $named['title']
 );
 
 echo "Generating pages\n";

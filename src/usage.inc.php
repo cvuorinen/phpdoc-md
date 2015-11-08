@@ -14,3 +14,6 @@ Options:
     --lt [template]
         This specifies the 'template' for links we're generating. By default
         this is "%c.md".
+
+    --title [title]
+        This specifies the title for the generated Markdown document.

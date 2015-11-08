@@ -45,17 +45,29 @@ class Generator
     protected $linkTemplate;
 
     /**
+     * @var string
+     */
+    private $title;
+
+    /**
      * @param array  $classDefinitions
      * @param string $outputDir
      * @param string $templateDir
      * @param string $linkTemplate
+     * @param string $title
      */
-    public function __construct(array $classDefinitions, $outputDir, $templateDir, $linkTemplate = '%c.md')
-    {
+    public function __construct(
+        array $classDefinitions,
+        $outputDir,
+        $templateDir,
+        $linkTemplate = '%c.md',
+        $title = 'API Index'
+    ) {
         $this->classDefinitions = $classDefinitions;
         $this->outputDir = $outputDir;
         $this->templateDir = $templateDir;
         $this->linkTemplate = $linkTemplate;
+        $this->title = $title;
     }
 
     /**
@@ -85,8 +97,8 @@ class Generator
         $index = $twig->render(
             file_get_contents($this->templateDir . '/index.twig'),
             array(
-                'index'            => $index,
-                'classDefinitions' => $this->classDefinitions,
+                'title' => $this->title,
+                'index' => $index,
             )
         );
 
