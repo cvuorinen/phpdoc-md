@@ -55,19 +55,22 @@ class Generator
      * @param string $templateDir
      * @param string $linkTemplate
      * @param string $title
+     * @param bool   $singleFile
      */
     public function __construct(
         array $classDefinitions,
         $outputDir,
         $templateDir,
         $linkTemplate = '%c.md',
-        $title = 'API Index'
+        $title = 'API Index',
+        $singleFile = true
     ) {
         $this->classDefinitions = $classDefinitions;
         $this->outputDir = $outputDir;
         $this->templateDir = $templateDir;
         $this->linkTemplate = $linkTemplate;
         $this->title = $title;
+        $this->singleFile = $singleFile;
     }
 
     /**
@@ -75,6 +78,7 @@ class Generator
      */
     public function run()
     {
+        $content = '';
         $loader = new Twig_Loader_String();
         $twig = new Twig_Environment($loader);
 
@@ -84,77 +88,90 @@ class Generator
         $twig->addFilter('classLink', new Twig_Filter_Function('PHPDocMd\Generator::classLink'));
         $twig->addFilter('stripPTags', new Twig_Filter_Function('PHPDocMd\\Generator::stripOuterParagraphTags'));
 
-        foreach ($this->classDefinitions as $className => $data) {
+        foreach ($this->classDefinitions as $classInfo) {
             $output = $twig->render(
                 file_get_contents($this->templateDir . '/class.twig'),
-                $data
+                $classInfo
             );
 
-            file_put_contents($this->outputDir . '/' . $data['fileName'], $output);
+            if ($this->singleFile) {
+                $content .= $output;
+            } else {
+                file_put_contents($this->outputDir . '/' . $classInfo['fileName'], $output);
+            }
         }
 
         $index = $this->createIndex();
 
-        $index = $twig->render(
+        $content = $twig->render(
             file_get_contents($this->templateDir . '/index.twig'),
             array(
                 'title' => $this->title,
                 'index' => $index,
             )
-        );
+        ) . $content;
 
-        file_put_contents($this->outputDir . '/ApiIndex.md', $index);
+        file_put_contents($this->outputDir . '/ApiIndex.md', $content);
     }
 
     /**
-     * Creates an index of classes and namespaces.
+     * Creates an index (table of contents) of classes and methods.
      *
      * I'm generating the actual markdown output here, which isn't great...But it will have to do.
      * If I don't want to make things too complicated.
      *
-     * @return array
+     * @return string
      */
     protected function createIndex()
     {
-        $tree = array();
+        $output = '';
+        $links = array();
 
-        foreach ($this->classDefinitions as $className => $classInfo) {
-            $current =& $tree;
+        foreach ($this->classDefinitions as $classInfo) {
+            $output .= $this->createLink(
+                $classInfo['className'],
+                $classInfo['shortClass'],
+                $links
+            );
 
-            foreach (explode('\\', $className) as $part) {
-                if (!isset($current[$part])) {
-                    $current[$part] = array();
-                }
-
-                $current =& $current[$part];
+            foreach ($classInfo['methods'] as $method) {
+                $output .= $this->createLink(
+                    $classInfo['className'],
+                    $method['name'],
+                    $links,
+                    1
+                );
             }
         }
 
-        /**
-         * This will be a reference to the $treeOutput closure, so that it can be invoked
-         * recursively. A string is used to trick static analysers into thinking this might be
-         * callable.
-         */
-        $treeOutput = '';
+        return $output;
+    }
 
-        $treeOutput = function ($item, $fullString = '', $depth = 0) use (&$treeOutput) {
-            $output = '';
+    /**
+     * @param string $className
+     * @param string $label
+     * @param array  $links
+     * @param int    $depth
+     *
+     * @return string
+     */
+    private function createLink($className, $label, array &$links, $depth = 0)
+    {
+        $anchor = strtolower($label);
 
-            foreach ($item as $name => $subItems) {
-                $fullName = $name;
+        if ($this->singleFile) {
+            // Check if we already have link to an anchor with the same name, and add count suffix
+            $linkCounts = array_count_values($links);
+            $anchorSuffix = array_key_exists($anchor, $linkCounts)
+                ? '-' . $linkCounts[$anchor] : '';
+            array_push($links, $anchor);
 
-                if ($fullString) {
-                    $fullName = $fullString . '\\' . $name;
-                }
+            $linkString =  sprintf("[%s](%s)", $label, '#' . $anchor . $anchorSuffix);
+        } else {
+            $linkString = self::classLink($className, $label, $anchor);
+        }
 
-                $output .= str_repeat(' ', $depth * 4) . '* ' . Generator::classLink($fullName, $name) . "\n";
-                $output .= $treeOutput($subItems, $fullName, $depth + 1);
-            }
-
-            return $output;
-        };
-
-        return $treeOutput($tree);
+        return str_repeat(' ', $depth * 4)  . '* ' . $linkString . "\n";
     }
 
     /**
@@ -167,10 +184,11 @@ class Generator
      *
      * @param string      $className
      * @param null|string $label
+     * @param null|string $anchor
      *
      * @return string
      */
-    public static function classLink($className, $label = null)
+    public static function classLink($className, $label = null, $anchor = null)
     {
         $classDefinitions = $GLOBALS['PHPDocMD_classDefinitions'];
         $linkTemplate = $GLOBALS['PHPDocMD_linkTemplate'];
@@ -189,6 +207,7 @@ class Generator
             } else {
                 $link = str_replace('\\', '-', $oneClass);
                 $link = strtr($linkTemplate, array('%c' => $link));
+                $link .= ($anchor) ? '#' . $anchor : '';
 
                 $returnedClasses[] = sprintf("[%s](%s)", $label, $link);
             }
