@@ -178,11 +178,12 @@ class Parser
                 return $return;
             }, $arguments));
 
-            $signature = sprintf('%s %s::%s(%s)', $return, $className, $methodName, $argumentStr);
+            $signature = sprintf('%s::%s(%s): %s', (string) $class->name, $methodName, $argumentStr, $return);
 
             $methods[$methodName] = array(
                 'name'        => $methodName,
-                'description' => (string) $method->docblock->description . "\n\n" . (string) $method->docblock->{'long-description'},
+                'description' => (string) $method->docblock->description,
+                'longDescription' => (string) $method->docblock->{'long-description'},
                 'visibility'  => (string) $method['visibility'],
                 'abstract'    => ((string) $method['abstract']) == "true",
                 'static'      => ((string) $method['static']) == "true",
