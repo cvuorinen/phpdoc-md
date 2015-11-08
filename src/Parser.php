@@ -132,7 +132,7 @@ class Parser
                 $return = (string) $return[0]['type'];
             } else {
                 $returnDescription = '';
-                $return = 'mixed';
+                $return = '';
             }
 
             if ($return === (string) $class->full_name) {
@@ -382,6 +382,12 @@ class Parser
             return $return;
         }, $arguments));
 
-        return sprintf('%s::%s( %s ): %s', $className, $methodName, $argumentStr, $return);
+        $signature = sprintf('%s::%s( %s )', $className, $methodName, $argumentStr);
+
+        if (!empty($return)) {
+            $signature .= ': ' . $return;
+        }
+
+        return $signature;
     }
 }
