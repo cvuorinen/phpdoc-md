@@ -133,6 +133,10 @@ class Parser
                 $return = 'mixed';
             }
 
+            if ($return === (string) $class->full_name) {
+                $return = (string) $class->name;
+            }
+
             $arguments = array();
 
             foreach ($method->argument as $argument) {
