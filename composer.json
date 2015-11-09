@@ -1,8 +1,8 @@
 {
-    "name": "evert/phpdoc-md",
+    "name": "cvuorinen/phpdoc-md",
     "description" : "PHP documentation generator, with markdown output",
     "keywords" : [ "PHP", "Markdown", "PHPDoc" ],
-    "homepage" : "https://github.com/evert/phpdoc-md",
+    "homepage" : "https://github.com/cvuorinen/phpdoc-md",
     "license" : "MIT",
     "require" : {
         "php" : ">=5.3.1",
@@ -16,6 +16,12 @@
             "name" : "Evert Pot",
             "email" : "evert@rooftopsolutions.nl",
             "homepage" : "http://www.rooftopsolutions.nl/",
+            "role" : "Developer"
+        },
+        {
+            "name" : "Carl Vuorinen",
+            "email" : "carl.vuorinen@gmail.com",
+            "homepage" : "http://cvuorinen.net",
             "role" : "Developer"
         }
     ],
