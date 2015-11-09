@@ -99,6 +99,7 @@ class Parser
                 'methods'         => $this->parseMethods($class),
                 'properties'      => $this->parseProperties($class),
                 'constants'       => $this->parseConstants($class),
+                'seeAlso'         => $this->parseSeeAlso($class),
             );
         }
 
@@ -185,6 +186,7 @@ class Parser
                 'returnDescription' => $returnDescription,
                 'arguments'   => $arguments,
                 'definedBy'   => $className,
+                'seeAlso'     => $this->parseSeeAlso($method),
             );
         }
 
@@ -389,5 +391,35 @@ class Parser
         }
 
         return $signature;
+    }
+
+    /**
+     * @param SimpleXMLElement $element Class or method
+     *
+     * @return array
+     */
+    private function parseSeeAlso(SimpleXMLElement $element)
+    {
+        $seeAlso = array();
+
+        $seeTags = $element->xpath('docblock/tag[@name="see"]');
+        foreach ($seeTags as $seeTag) {
+            $seeAlso[] = array(
+                'link' => (string) $seeTag['link'],
+                'description' => (string) $seeTag['description'],
+            );
+        }
+
+        $linkTags = $element->xpath('docblock/tag[@name="link"]');
+        foreach ($linkTags as $linkTag) {
+            $description = ((string) $linkTag['link'] === (string) $linkTag['description'])
+                         ? '' : (string) $linkTag['description'];
+            $seeAlso[] = array(
+                'link' => (string) $linkTag['link'],
+                'description' => $description,
+            );
+        }
+
+        return $seeAlso;
     }
 }

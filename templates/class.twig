@@ -26,6 +26,15 @@
 
 {% endif %}{# isInterface #}
 
+{% if seeAlso %}
+**See Also:**
+
+{% for seeAlsoLink in seeAlso %}
+* {{ seeAlsoLink.link }} {% if seeAlsoLink.description %}- {{ seeAlsoLink.description|raw }}{% endif %}
+{% endfor %}
+
+{% endif %}
+
 
 {% for method in methods %}
 {% if method.visibility == 'public' and not method.abstract %}
@@ -61,6 +70,15 @@
 **Return Value:**
 
 {{ method.returnDescription|raw }}
+
+{% endif %}
+
+{% if method.seeAlso %}
+**See Also:**
+
+{% for seeAlso in method.seeAlso %}
+* {{ seeAlso.link }} {% if seeAlso.description %}- {{ seeAlso.description|raw }}{% endif %}
+{% endfor %}
 
 {% endif %}
 
