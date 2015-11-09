@@ -298,7 +298,7 @@ class Parser
             }
 
             foreach ($this->classDefinitions[$extends]['methods'] as $methodName => $methodInfo) {
-                if (!isset($class[$methodName])) {
+                if (!isset($class['methods'][$methodName])) {
                     if ($methodInfo['return'] === $this->classDefinitions[$extends]['shortClass']) {
                         $methodInfo['return'] = $class['shortClass'];
                     }
