@@ -1,39 +1,40 @@
-PHPDocumentor MarkDown export
+phpDocumentor Markdown export
 =============================
 
-This is a script that can generate markdown (.md) files for your API
-documentation.
+This is a script that can generate markdown (.md) documentation files from your DocBlock comments.
 
 It is tailored for projects using PSR-0, PSR-1, PSR-2, PSR-4 and namespaces.
-The project was primarily developed for [sabre/dav](https://sabre.io/),
-but it should work for other codebases as well.
 
-It only documents classes and interfaces.
+This is based on the work of Evert Pot in https://github.com/evert/phpdoc-md.
 
-The code is ugly, it was intended as a one-off, and I was in a hurry.. so the
-codebase may not be up to your standards. (it certainly isn't up to mine).
+Comment from Evert's original README:
+> The code is ugly, it was intended as a one-off, and I was in a hurry.. so the codebase may not be up to your standards. (it certainly isn't up to mine).
+
+I haven't much improved the code, at least not yet. Just modified it to better suit my use case.
+
+Main differences
+----------------
+
+Main differences with the original is that the goal is not to produce a full blown API doc.
+But rather a usage documentation for a small library to document only it's public API.
+So it skips all abstract classes and interfaces and non-public methods.
+And only creates a single file with the index as well as all the content (although there is a setting to
+generate multiple files like the original).
 
 Installation
 ------------
 
-This project assumes you have composer installed.
-Simply add:
+Install with composer:
 
-    "require-dev" : {
-
-        "evert/phpdoc-md" : "~0.1.1"
-
-    }
-
-To your composer.json, and then you can simply install with:
-
-    composer install
+```bash
+composer require cvuorinen/phpdoc-md
+```
 
 
 Usage
 -----
 
-First ensure that phpdocumentor 2 is installed somewhere, after, you must
+First ensure that phpDocumentor 2 is installed somewhere, after, you must
 generate a file called `structure.xml`.
 
 The easiest is to create a temporary directory, for example named `docs/`.
@@ -51,7 +52,5 @@ Options
         This specifies the 'template' for links we're generating. By default
         this is "%c.md".
 
-This should generate all the .md files. I'm excited to hear your feedback.
-
-Cheers,
-[Evert](https://twitter.com/evertp)
+    --title [title]
+        This specifies the title for the generated Markdown document.
