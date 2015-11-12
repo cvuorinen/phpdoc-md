@@ -10,16 +10,16 @@ This is based on the work of Evert Pot in https://github.com/evert/phpdoc-md.
 Comment from Evert's original README:
 > The code is ugly, it was intended as a one-off, and I was in a hurry.. so the codebase may not be up to your standards. (it certainly isn't up to mine).
 
-I haven't much improved the code, at least not yet. Just modified it to better suit my use case.
+I haven't much improved the code, at least not yet, so there's a lot of room for improvement. I have mainly just modified it to better suit my use case.
 
 Main differences
 ----------------
 
-Main differences with the original is that the goal is not to produce a full blown API doc.
-But rather a usage documentation for a small library to document only it's public API.
-So it skips all abstract classes and interfaces and non-public methods.
-And only creates a single file with the index as well as all the content (although there is a setting to
-generate multiple files like the original).
+Main differences with the original is that my goal was not to produce a full blown API doc,
+but rather a usage documentation for a small library to document only it's public API.
+So it skips all abstract classes and interfaces and non-public methods and only creates a single 
+file with the table of contents as well as all the content (although there is a setting to generate 
+multiple files like the original if one file gets too large, but haven't tested that very much).
 
 Installation
 ------------
