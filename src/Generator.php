@@ -7,7 +7,7 @@ use Twig_Filter_Function;
 use Twig_Loader_String;
 
 /**
- * This class takes the output from 'parser', and generate the markdown
+ * This class takes the output from 'parser', and generates the markdown
  * templates.
  *
  * @copyright Copyright (C) 2007-2012 Rooftop Solutions. All rights reserved.
@@ -50,27 +50,48 @@ class Generator
     private $title;
 
     /**
+     * @var Twig_Environment
+     */
+    private $twig;
+
+    /**
+     * @var bool Create only single file when true
+     */
+    private $singleFile = true;
+
+    /**
+     * @var string Footer template filename (leave empty for no footer)
+     */
+    private $footerTemplate = 'footer.twig';
+
+    /**
      * @param array  $classDefinitions
      * @param string $outputDir
      * @param string $templateDir
      * @param string $linkTemplate
      * @param string $title
-     * @param bool   $singleFile
      */
     public function __construct(
         array $classDefinitions,
         $outputDir,
         $templateDir,
         $linkTemplate = '%c.md',
-        $title = 'API Index',
-        $singleFile = true
+        $title = 'API Index'
     ) {
         $this->classDefinitions = $classDefinitions;
         $this->outputDir = $outputDir;
         $this->templateDir = $templateDir;
         $this->linkTemplate = $linkTemplate;
         $this->title = $title;
-        $this->singleFile = $singleFile;
+
+        $loader = new Twig_Loader_String();
+        $this->twig = new Twig_Environment($loader);
+
+        $GLOBALS['PHPDocMD_classDefinitions'] = $this->classDefinitions;
+        $GLOBALS['PHPDocMD_linkTemplate'] = $this->linkTemplate;
+
+        $this->twig->addFilter('classLink', new Twig_Filter_Function('PHPDocMd\Generator::classLink'));
+        $this->twig->addFilter('stripPTags', new Twig_Filter_Function('PHPDocMd\\Generator::stripOuterParagraphTags'));
     }
 
     /**
@@ -79,14 +100,6 @@ class Generator
     public function run()
     {
         $content = '';
-        $loader = new Twig_Loader_String();
-        $twig = new Twig_Environment($loader);
-
-        $GLOBALS['PHPDocMD_classDefinitions'] = $this->classDefinitions;
-        $GLOBALS['PHPDocMD_linkTemplate'] = $this->linkTemplate;
-
-        $twig->addFilter('classLink', new Twig_Filter_Function('PHPDocMd\Generator::classLink'));
-        $twig->addFilter('stripPTags', new Twig_Filter_Function('PHPDocMd\\Generator::stripOuterParagraphTags'));
 
         foreach ($this->classDefinitions as $classInfo) {
             // skip all abstract classes and interfaces
@@ -94,7 +107,7 @@ class Generator
                 continue;
             }
 
-            $output = $twig->render(
+            $output = $this->twig->render(
                 file_get_contents($this->templateDir . '/class.twig'),
                 $classInfo
             );
@@ -102,13 +115,13 @@ class Generator
             if ($this->singleFile) {
                 $content .= $output;
             } else {
-                file_put_contents($this->outputDir . '/' . $classInfo['fileName'], $output);
+                $this->writeFile($classInfo['fileName'], $output);
             }
         }
 
         $index = $this->createIndex();
 
-        $content = $twig->render(
+        $content = $this->twig->render(
             file_get_contents($this->templateDir . '/index.twig'),
             array(
                 'title' => $this->title,
@@ -116,7 +129,7 @@ class Generator
             )
         ) . $content;
 
-        file_put_contents($this->outputDir . '/README.md', $content);
+        $this->writeFile('README.md', $content);
     }
 
     /**
@@ -242,5 +255,20 @@ class Generator
     public static function stripOuterParagraphTags($text)
     {
         return preg_replace('/(^<p>|<\/p>$)/', null, $text);
+    }
+
+    /**
+     * @param string $filename
+     * @param string $content
+     */
+    private function writeFile($filename, $content)
+    {
+        if ($this->footerTemplate) {
+            $content .= $this->twig->render(
+                file_get_contents($this->templateDir . '/' . $this->footerTemplate)
+            );
+        }
+
+        file_put_contents($this->outputDir . '/' . $filename, $content);
     }
 }
